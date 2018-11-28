@@ -1,0 +1,51 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure('2') do |config|
+  config.vagrant.plugins = "vagrant-vbguest"
+  config.vagrant.plugins = "vagrant-bindfs"
+  config.vagrant.plugins = "vagrant-share"
+  config.vm.box = 'generic/ubuntu1804'
+
+  config.vm.box_check_update = false
+
+  config.vm.define "generic" do |generic|
+    generic.vm.box = "ookk3388/generic"
+  generic.vm.host_name = 'generic'
+  generic.ssh.username ='vagrant'
+  generic.ssh.password ='vagrant'
+  generic.vm.network 'forwarded_port', guest: 22,   host: 2170, id: 'ssh', auto_correct: true
+
+  generic.vm.host_name = 'generic-dev'
+
+  generic.vm.network "private_network"
+ #配置当前vm的host-only网络的IP地址为192.168.33.10
+  generic.vm.network "public_network", ip: "192.168.0.200" , bridge: "en0: Wi-Fi (AirPort)"
+ #创建一个bridge桥接网络，指定IP
+
+
+
+
+  generic.vm.synced_folder "~/", "/vagrant",type: "rsync"
+ # Use vagrant-bindfs to re-mount folder
+ #config.bindfs.bind_folder "/vagrant-nfs", "guest/mount/point"
+
+ # Bind a folder after provisioning
+ #config.bindfs.bind_folder "/vagrant-after-provision", "another/guest/mount/point", after: :provision
+
+  generic.vm.provider 'virtualbox' do |vb|
+    #vb.gui = true
+    vb.name = 'generic'
+    vb.memory = 2048
+    vb.cpus = 2
+    vb.customize ['modifyvm', :id, '--vram', '256']
+
+  end
+
+  # Copy private key to VM for Git and other tools
+  generic.vm.provision 'file', source: "#{ENV['HOME']}/.ssh/id_rsa", destination: '~/.ssh/id_rsa'
+  generic.vm.provision 'shell', privileged: false, path: 'provision/base.sh', name: 'base.sh'
+  generic.vm.provision 'shell', privileged: false, path: 'provision/zh.sh', name: 'zh.sh'
+  generic.vm.provision 'shell', privileged: false, path: 'provision/dev.sh', name: 'dev.sh'
+  end
+end

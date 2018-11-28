@@ -1,0 +1,6 @@
+[submodule "sources/scala-base"]
+	path = sources/scala-base
+	url = https://github.com/boob-sbcm/shapeless.git
+[submodule "sources/hyper-web-tirm"]
+	path = sources/hyper-web-tirm
+	url = https://github.com/boob-sbcm/hyper.git
